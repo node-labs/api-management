@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+    <title>API Info</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <style>
+        body         { padding-top:80px; }
+    </style>
+</head>
+<body>
+<div class="container">
+<div class="col-sm-6 col-sm-offset-3">
+    <h1><span class="glyphicon glyphicon-cog"></span> API Info</h1><BR/>
+
+    <% if (typeof message !== 'undefined' && message.length > 0) { %>
+        <div class="alert alert-danger"><%= message %></div>
+    <% } %>
+
+    <!-- LOGIN FORM -->
+    <form action="/updateapi/<%= apiInfo.apiname %>" method="post">
+        <div class="form-group">
+            <label>API Name</label>
+            <input type="text" class="form-control" name="apiname" disabled = true value=<%= apiInfo.apiname %> >
+        </div>
+        <div class="form-group">
+            <label>URL</label>
+            <input type="text" class="form-control" name="url" disabled = true value=<%= apiInfo.url %> >
+        </div>
+        <div class="form-group">
+            <label>Endpoint</label>
+            <input type="text" class="form-control" name="endpoint" value=<%= apiInfo.endpoint %> >
+        </div>
+        <div class="form-group">
+            <label>Enable Caching</label>
+            <br>
+            <label class="radio-inline">
+              <input type="radio" name="enablecaching" id="yes" value="1" <% if(apiInfo.enablecaching){ %> checked="checked" <% } %>> Yes
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="enablecaching" id="no" value="0" <% if(!apiInfo.enablecaching){ %> checked="checked" <% } %>> No
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Cache Params</label>
+            <input type="text" class="form-control" name="cacheparams" value=<%= apiInfo.cacheparams %> >
+        </div>
+        <div class="form-group">
+            <label>Cache TTL</label>
+            <input type="text" class="form-control" name="ttl" value=<%= apiInfo.ttl %> >
+        </div>
+        <div class="form-group">
+            <label>Enable Debugging</label>
+            <br>
+            <label class="radio-inline">
+              <input type="radio" name="enabledebug" id="yes" value="1" <% if(apiInfo.enabledebug){ %> checked="checked" <% } %>> Yes
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="enabledebug" id="no" value="0" <% if(!apiInfo.enabledebug){ %> checked="checked" <% } %>> No
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Mandatory Params</label>
+            <input type="text" class="form-control" name="reqparams" value=<%= apiInfo.reqparams %> >
+        </div>
+        <div class="form-group">
+            <label>Validators</label>
+            <input type="text" class="form-control" name="validators" value=<%= apiInfo.validators %> >
+        </div>
+
+        <button type="submit" class="btn btn-warning btn-lg">Update API</button>
+    </form>
+
+    <hr>
+
+</div>
+</div>
+</body>
+</html>
