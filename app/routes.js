@@ -12,19 +12,21 @@ let proxy = httpProxy.createProxyServer({})
 let Cache = require("../models/cache")
 
 require('songbird')
-let apis = {
-    "/api/categories/viewmenu": {
-        apiname: "viewmenu",
-        url: "api/categories/viewmenu",
-        endpoint: "http://oses4004.wal-mart.com:40181",
-        enablecaching: true,
-        cacheparams: "categorylevel,requestorigin",
-        ttl: 60,
-        enabledebug: true,
-        reqparams: null,
-        validators: null
-    }
-}
+// let apis = {
+//     "/api/categories/viewmenu": {
+//         apiname: "viewmenu",
+//         url: "api/categories/viewmenu",
+//         endpoint: "http://oses4004.wal-mart.com:40181",
+//         enablecaching: true,
+//         cacheparams: "categorylevel,requestorigin",
+//         ttl: 60,
+//         enabledebug: true,
+//         reqparams: null,
+//         validators: null
+//     }
+// }
+
+let apis
 
 proxy.on('proxyRes', function (proxyRes, req, res) {
     req.data = ""
@@ -53,38 +55,16 @@ proxy.on('end', function(req) {
 
 module.exports = (app) => {
 
-    app.get('/home', isLoggedIn, then(async(req, res) => {
-        let apis = await Api.promise.find()
-        console.log(apis)
-        res.render('home.ejs', {
-            user: req.user,
-            apis: apis,
-            message: req.flash('error')
-        })
-    }))
-
-    app.get('/logout', (req, res) => {
-        req.logout()
-        res.redirect('/')
-    })
-
-    app.get('/', (req, res) => {
-        res.render('login.ejs', {message: req.flash('error')})
-
-    })
-
     app.get('/api/*', then(async(req, res) => {
+        apis = app.config.apis
         await setConfig(req)
-        console.log(req.cacheKey)
         let cache = await Cache.promise.findOne({key: req.cacheKey})
         if(cache) {
-            console.log('found in the cache:' + JSON.stringify(cache.value))
+            console.log('found in the cache:' + req.cacheKey)
             req.cacheResponse = false
             res.json(cache.value)
         } else {
             req.cacheResponse = true
-            let endPointUrl = req.apiconfig.endpoint + req.query
-            console.log(endPointUrl)
             proxy.web(req, res, { target: req.apiconfig.endpoint})
         }
     }))
@@ -92,13 +72,11 @@ module.exports = (app) => {
     async function setConfig(req) {
         let urlarray = req.url.split('?')
         let url = urlarray[0]
-        let query = urlarray[1]
         req.apiconfig = apis[url]
-        console.log(query)
-        req.query = query
         let cacheparams = apis[url].cacheparams.split(',')
         let cacheKey = url
         for(let counter=0; counter<cacheparams.length; counter++) {
+            console.log(req.query[cacheparams[counter]])
             if(req.query[cacheparams[counter]]) {
                 cacheKey = cacheKey + '|' + cacheparams[counter] + "=" + req.query[cacheparams[counter]]     
             }

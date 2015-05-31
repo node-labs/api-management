@@ -10,6 +10,7 @@ let routes = require('./routes')
 let passportMiddleware = require('./middlewares/passport')
 let flash = require('connect-flash')
 let ESClient = require('./esclient')
+let Api = require('../models/api')
 
 require('songbird')
 const NODE_ENV = process.env.NODE_ENV || 'development'
@@ -19,9 +20,13 @@ module.exports = class App {
         let app = this.app = express()
         this.port = process.env.PORT || 8000
         console.log('config: ' + JSON.stringify(config))
+//         for(let api in apis) {
+//  			console.log(api)
+//         }
 		app.config = {
 			elasticsearch: config.elasticsearch[NODE_ENV],
-			database: config.database[NODE_ENV]
+			database: config.database[NODE_ENV],
+			apis: {}
 		}
 
 		passportMiddleware.configure()
@@ -56,7 +61,6 @@ module.exports = class App {
 
 		// configure routes
 		routes(this.app)
-
     }
 
 	async initialize(port) {
@@ -65,6 +69,13 @@ module.exports = class App {
 			let esClient = new ESClient(this.app.config)
 			this.app.esClient = await esClient.initialize(this.app.config)
 		}
+
+		let apis = await Api.promise.find()
+		let apiConfig = {}
+        for (let counter = 0; counter<apis.length; counter++) {
+            apiConfig[apis[counter].url] = apis[counter]
+        }
+        this.app.config.apis = apiConfig
 		// Return this to allow chaining
 		return this
 	}
