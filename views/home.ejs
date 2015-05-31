@@ -13,6 +13,7 @@
 
     <div class="page-header text-center">
         <h1><span class="glyphicon glyphicon-cog"></span> API Administration</h1>
+        <a href="/logout" class="btn btn-default btn-sm">Logout</a>
 
     </div>
     <table class="table table-striped">
@@ -34,9 +35,7 @@
 		        	<%= apis[i].url %>
 		        </td>
 		        <td class="active">
-		        	<form action="/updateapi/<%= apis[i].apiname %>" method="get">
-		        		<button class="btn btn-primary btn-sm">Edit</button>
-		        	</form>
+		        	<a href="/updateapi/<%= apis[i].apiname %>" class="btn btn-primary btn-sm">Edit</a>
 		        	<form action="/deleteapi/<%= apis[i].apiname %>" method="post">
 		        		<button class="btn btn-danger btn-sm">Delete</button>
 		        	</form>
@@ -44,7 +43,9 @@
 	        </tr>
     	<% } %>
     </table>
-
+    <form action = "/addapi" method="get">
+		<button class="btn btn-primary btn-lg center-block">Add New API</button>
+	</form>
 </div>
 </body>
 </html>
