@@ -36,7 +36,7 @@ module.exports = (app) => {
         await esClient.postLogToES(data)
     }
 
-    proxy.on('proxyRes', function (proxyRes, req, res) {
+    proxy.on('proxyRes', function (proxyRes, req) {
         req.data = ""
         proxyRes.on('data', function (dataBuffer) {
             console.log('---------------------------------------------------------------------------------------------------')
@@ -48,10 +48,9 @@ module.exports = (app) => {
     })
 
     proxy.on('end', function(req) {
-        console.log('proxied')
-        console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-        console.log("Complete Response from target server : "+ req.data)
-        console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        if(req.apiconfig.enabledebug) {
+            console.log('Response:' + req.data)
+        }
         let response
         if(req.cacheResponse) {
             let cache = new Cache()
@@ -72,23 +71,29 @@ module.exports = (app) => {
         let cacheparams = apis[url].cacheparams.split(',')
         let cacheKey = url
         for(let counter = 0; counter<cacheparams.length; counter++) {
-            console.log(req.query[cacheparams[counter]])
             if(req.query[cacheparams[counter]]) {
                 cacheKey = cacheKey + '|' + cacheparams[counter] + "=" + req.query[cacheparams[counter]]
             }
         }
         req.cacheKey = cacheKey
+        if(req.apiconfig.enabledebug) {
+            console.log('Request Url:' + req.url + '. Cache Key:' + cacheKey)
+        }
     }
 
     app.get('/api/*', then(async(req, res) => {
         apis = app.config.apis
+        req.startTime = new Date()
         await setConfig(req)
         let entry
         let entries = await Cache.getEntry(req.cacheKey, req.apiconfig.ttl)
         if(entries) entry = entries[0]
         if(entry) {
-            console.log('found the entry in the cache:' + req.cacheKey + ' with time:' + entry.cachedTS)
+            console.log('Found the entry in the cache:' + req.cacheKey + ' with time:' + entry.cachedTS)
             req.cacheResponse = false
+            if(req.apiconfig.enabledebug) {
+                console.log('Response:' + JSON.stringify(entry.value))
+            }
             res.json(entry.value)
         } else {
             req.cacheResponse = true

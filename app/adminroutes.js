@@ -1,20 +1,21 @@
 let isLoggedIn = require('./middlewares/isLoggedIn')
 let Api = require('../models/api')
 let then = require('express-then')
-let nodeify = require('bluebird-nodeify')
-let request = require('request')
-let nodeifyit = require('nodeifyit')
-let Promise = require("bluebird")
 
 require('songbird')
 
-    module.exports = (app) => {
+module.exports = (app) => {
 
     let passport = app.passport
 
     app.get('/home', isLoggedIn, then(async(req, res) => {
         let apis = await Api.promise.find()
         console.log(apis)
+        let apiConfig = {}
+        for (let counter = 0; counter<apis.length; counter++) {
+            apiConfig[apis[counter].url] = apis[counter]
+        }
+        app.config.apis = apiConfig
         res.render('home.ejs', {
             user: req.user,
             apis: apis,
@@ -31,7 +32,7 @@ require('songbird')
         res.render('login.ejs', {message: req.flash('error')})
 
     })
-    
+
     app.get('/adduser', (req, res) => {
         res.render('adduser.ejs', {message: req.flash('error') })
     })
@@ -43,7 +44,7 @@ require('songbird')
     app.get('/updateapi/:apiname', isLoggedIn, then(async(req, res) => {
         let apifromDB = await Api.promise.findOne({apiname: req.params.apiname})
         if(!apifromDB){
-           return req.flash('error', 'Couldnt find API to update!') 
+           return req.flash('error', 'Couldnt find API to update!')
         }
         res.render('updateapi.ejs', {apiInfo: apifromDB, message: req.flash('error') })
     }))
@@ -76,7 +77,7 @@ require('songbird')
                 if(!apiname.trim() || !url.trim() || !endpoint.trim()){
                     req.flash('error', 'Please fill all required fields marked by * !')
                     res.redirect('/addapi')
-                }else if(enablecaching == true && (!cacheparams.trim() || !ttl.trim())){
+                }else if(enablecaching === true && (!cacheparams.trim() || !ttl.trim())){
                     req.flash('error', 'Please specify cache ttl and cache params!')
                     res.redirect('/addapi')
                 }
@@ -123,7 +124,7 @@ require('songbird')
                 let reqparams = req.body.reqparams
                 let validators = req.body.validators
 
-                if(enablecaching == true && (!cacheparams.trim() || !ttl.trim())){
+                if(enablecaching === true && (!cacheparams.trim() || !ttl.trim())){
                     req.flash('error', 'Please specify cache ttl and cache params!')
                     res.redirect('/updateapi/'+apiname)
                 }
@@ -132,7 +133,7 @@ require('songbird')
                 if(!apifromDB){
                     console.log('Couldnt find API to update!')
                     req.flash('error', 'Couldnt find API to update!')
-                    res.redirect('/updateapi') 
+                    res.redirect('/updateapi')
                 }
                 apifromDB.endpoint = endpoint
                 apifromDB.enablecaching = enablecaching
@@ -154,7 +155,7 @@ require('songbird')
                 let apifromDB = await Api.promise.findOne({apiname: req.params.apiname})
                 if(!apifromDB){
                     console.log('Couldnt find API to Delete!')
-                   return req.flash('error', 'Couldnt find API to delete!') 
+                   return req.flash('error', 'Couldnt find API to delete!')
                 }
                 await apifromDB.remove()
                 res.redirect('/home')

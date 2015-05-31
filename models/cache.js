@@ -19,7 +19,6 @@ let cacheSchema = mongoose.Schema({
 })
 
 cacheSchema.statics.getEntry = async function(key, ttl) {
-	console.log(key, ttl)
 	let ttlms = ttl * 60 * 1000
     let date = new Date()
     console.log('current time:' + date)
