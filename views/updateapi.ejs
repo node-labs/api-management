@@ -11,7 +11,7 @@
 <body>
 <div class="container">
 <div class="col-sm-6 col-sm-offset-3">
-    <h1><span class="glyphicon glyphicon-cog"></span> API Info</h1><BR/>
+    <h1><span class="glyphicon glyphicon-cog"></span> Update API</h1><BR/>
 
     <% if (typeof message !== 'undefined' && message.length > 0) { %>
         <div class="alert alert-danger"><%= message %></div>
@@ -28,7 +28,7 @@
             <input type="text" class="form-control" name="url" disabled = true value=<%= apiInfo.url %> >
         </div>
         <div class="form-group">
-            <label>Endpoint</label>
+            <label>Endpoint</label><span class="glyphicon glyphicon-asterisk"></span>
             <input type="text" class="form-control" name="endpoint" value=<%= apiInfo.endpoint %> >
         </div>
         <div class="form-group">
@@ -46,7 +46,7 @@
             <input type="text" class="form-control" name="cacheparams" value=<%= apiInfo.cacheparams %> >
         </div>
         <div class="form-group">
-            <label>Cache TTL</label>
+            <label>Cache TTL (in mins)</label>
             <input type="text" class="form-control" name="ttl" value=<%= apiInfo.ttl %> >
         </div>
         <div class="form-group">
@@ -69,6 +69,7 @@
         </div>
 
         <button type="submit" class="btn btn-warning btn-lg">Update API</button>
+        <a href="/home" class="btn btn-warning btn-lg">Cancel</a>
     </form>
 
     <hr>

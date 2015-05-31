@@ -20,15 +20,15 @@
     <!-- LOGIN FORM -->
     <form action="/addapi" method="post">
         <div class="form-group">
-            <label>API Name</label>
+            <label>API Name</label> <span class="glyphicon glyphicon-asterisk"></span>
             <input type="text" class="form-control" name="apiname">
         </div>
         <div class="form-group">
-            <label>URL</label>
+            <label>URL</label> <span class="glyphicon glyphicon-asterisk"></span>
             <input type="text" class="form-control" name="url">
         </div>
         <div class="form-group">
-            <label>Endpoint</label>
+            <label>Endpoint</label> <span class="glyphicon glyphicon-asterisk"></span>
             <input type="text" class="form-control" name="endpoint">
         </div>
         <div class="form-group">
@@ -46,7 +46,7 @@
             <input type="text" class="form-control" name="cacheparams">
         </div>
         <div class="form-group">
-            <label>Cache TTL</label>
+            <label>Cache TTL (in mins)</label>
             <input type="text" class="form-control" name="ttl">
         </div>
         <div class="form-group">
@@ -69,6 +69,7 @@
         </div>
 
         <button type="submit" class="btn btn-warning btn-lg">Add API</button>
+        <a href="/home" class="btn btn-warning btn-lg">Cancel</a>
     </form>
 
     <hr>

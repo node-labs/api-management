@@ -148,6 +148,14 @@ module.exports = (app) => {
                 let reqparams = req.body.reqparams
                 let validators = req.body.validators
 
+                if(!apiname.trim() || !url.trim() || !endpoint.trim()){
+                    req.flash('error', 'Please fill all required fields marked by * !')
+                    res.redirect('/addapi')
+                }else if(enablecaching == true && (!cacheparams.trim() || !ttl.trim())){
+                    req.flash('error', 'Please specify cache ttl and cache params!')
+                    res.redirect('/addapi')
+                }
+
                 if(await Api.promise.findOne({apiname: apiname})){
                     console.log('API already registered')
                     req.flash('error', 'This API Name is already registered!')
@@ -180,7 +188,7 @@ module.exports = (app) => {
  // Update API
     app.post('/updateapi/:apiname', isLoggedIn, then(async (req, res) => {
         try{
-                let apiname = req.body.apiname
+                let apiname = req.params.apiname
                 let url = req.body.url
                 let endpoint = req.body.endpoint
                 let enablecaching = req.body.enablecaching
@@ -189,6 +197,11 @@ module.exports = (app) => {
                 let enabledebug = req.body.enabledebug
                 let reqparams = req.body.reqparams
                 let validators = req.body.validators
+
+                if(enablecaching == true && (!cacheparams.trim() || !ttl.trim())){
+                    req.flash('error', 'Please specify cache ttl and cache params!')
+                    res.redirect('/updateapi/'+apiname)
+                }
 
                 let apifromDB = await Api.promise.findOne({apiname: req.params.apiname})
                 if(!apifromDB){
