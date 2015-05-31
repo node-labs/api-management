@@ -9,6 +9,7 @@ let mongoose = require('mongoose')
 let routes = require('./routes')
 let passportMiddleware = require('./middlewares/passport')
 let flash = require('connect-flash')
+let ESClient = require('./esclient')
 
 require('songbird')
 const NODE_ENV = process.env.NODE_ENV || 'development'
@@ -17,8 +18,9 @@ module.exports = class App {
     constructor(config) {
         let app = this.app = express()
         this.port = process.env.PORT || 8000
+        console.log('config: ' + JSON.stringify(config))
 		app.config = {
-			//auth: config.auth[NODE_ENV],
+			elasticsearch: config.elasticsearch[NODE_ENV],
 			database: config.database[NODE_ENV]
 		}
 
@@ -59,6 +61,10 @@ module.exports = class App {
 
 	async initialize(port) {
 		await this.app.promise.listen(port)
+		if(this.app.config.elasticsearch.enabled === 'true'){
+			let esClient = new ESClient(this.app.config)
+			this.app.esClient = await esClient.initialize(this.app.config)
+		}
 		// Return this to allow chaining
 		return this
 	}

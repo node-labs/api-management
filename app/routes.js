@@ -30,6 +30,7 @@ module.exports = (app) => {
 
     app.get('/', (req, res) => {
         res.render('login.ejs', {message: req.flash('error')})
+
     })
 
     app.get('/adduser', (req, res) => {
