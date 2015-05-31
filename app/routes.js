@@ -150,12 +150,14 @@ module.exports = (app) => {
 
                 if(await Api.promise.findOne({apiname: apiname})){
                     console.log('API already registered')
-                    return req.flash('error', 'This API Name is already registered!')
+                    req.flash('error', 'This API Name is already registered!')
+                    res.redirect('/addapi')
                 }
 
                 if(await Api.promise.findOne({url: url})){
                     console.log('API already registered')
-                    return req.flash('error', 'This API URL is already registered!')
+                    req.flash('error', 'This API URL is already registered!')
+                    res.redirect('/addapi')
                 }
 
                 let newApi = new Api()
@@ -191,7 +193,8 @@ module.exports = (app) => {
                 let apifromDB = await Api.promise.findOne({apiname: req.params.apiname})
                 if(!apifromDB){
                     console.log('Couldnt find API to update!')
-                   return req.flash('error', 'Couldnt find API to update!') 
+                    req.flash('error', 'Couldnt find API to update!')
+                    res.redirect('/updateapi') 
                 }
                 apifromDB.endpoint = endpoint
                 apifromDB.enablecaching = enablecaching
