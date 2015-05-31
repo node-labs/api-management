@@ -58,9 +58,6 @@ module.exports = class App {
 		app.use(app.passport.session())
 		// Flash messages stored in session
 		app.use(flash())
-
-		// configure routes
-		routes(this.app)
     }
 
 	async initialize(port) {
@@ -69,13 +66,14 @@ module.exports = class App {
 			let esClient = new ESClient(this.app.config)
 			this.app.esClient = await esClient.initialize(this.app.config)
 		}
-
 		let apis = await Api.promise.find()
 		let apiConfig = {}
         for (let counter = 0; counter<apis.length; counter++) {
             apiConfig[apis[counter].url] = apis[counter]
         }
         this.app.config.apis = apiConfig
+		// configure routes
+		routes(this.app)
 		// Return this to allow chaining
 		return this
 	}
