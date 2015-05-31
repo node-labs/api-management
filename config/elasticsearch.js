@@ -1,8 +1,9 @@
 module.exports = {
     development: {
       'url': 'http://localhost:9200',
-      'enabled': 'true',
+      'enabled': 'false',
       'index': 'apimanager',
-      'type': 'logs'
+      'type': 'logs',
+      'loglevel': 'trace'
     }
 }

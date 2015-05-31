@@ -19,33 +19,51 @@ require('songbird')
 // }
 
 let apis
-
-proxy.on('proxyRes', function (proxyRes, req) {
-    req.data = ""
-    proxyRes.on('data', function (dataBuffer) {
-        console.log('---------------------------------------------------------------------------------------------------')
-        let data = dataBuffer.toString('utf8')
-        req.data = req.data + data
-        console.log("Response chunk from target server : "+ data)
-        console.log('---------------------------------------------------------------------------------------------------')
-    })
-})
-
-proxy.on('end', function(req) {
-    console.log('proxied')
-    console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    console.log("Complete Response from target server : "+ req.data)
-    console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    if(req.cacheResponse) {
-        let cache = new Cache()
-        cache.key = req.cacheKey
-        cache.value = JSON.parse(req.data)
-        cache.cachedTS = new Date()
-        cache.save()
-    }
-})
+const HTTP_OK = "200"
 
 module.exports = (app) => {
+
+    let esClient = app.esClient
+
+    async function logMetrics(req, res){
+        let timeTakenInMillis = new Date() - req.startTime
+        let data = {}
+        data.api = req.apiconfig.endpoint
+        data.statusCode = res.statusCode
+        data.responseCode = HTTP_OK
+        data.responseTime = timeTakenInMillis
+        console.log('Time taken in millis: ' + timeTakenInMillis)
+        await esClient.postLogToES(data)
+    }
+
+    proxy.on('proxyRes', function (proxyRes, req, res) {
+        req.data = ""
+        proxyRes.on('data', function (dataBuffer) {
+            console.log('---------------------------------------------------------------------------------------------------')
+            let data = dataBuffer.toString('utf8')
+            req.data = req.data + data
+            console.log("Response chunk from target server : "+ data)
+            console.log('---------------------------------------------------------------------------------------------------')
+        })
+    })
+
+    proxy.on('end', function(req) {
+        console.log('proxied')
+        console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        console.log("Complete Response from target server : "+ req.data)
+        console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        let response
+        if(req.cacheResponse) {
+            let cache = new Cache()
+            cache.key = req.cacheKey
+            response = JSON.parse(req.data)
+            cache.value = response
+            cache.cachedTS = new Date()
+            cache.save()
+        }
+        logMetrics(req, response)
+        console.log('Response end..')
+    })
 
     async function setConfig(req) {
         let urlarray = req.url.split('?')
