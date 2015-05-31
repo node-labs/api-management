@@ -13,12 +13,15 @@ require('songbird')
 module.exports = (app) => {
     let passport = app.passport
 
-    app.get('/home', isLoggedIn, (req, res) => {
+    app.get('/home', isLoggedIn, then(async(req, res) => {
+        let apis = await Api.promise.find()
+        console.log(apis)
         res.render('home.ejs', {
             user: req.user,
+            apis: apis,
             message: req.flash('error')
         })
-    })
+    }))
 
     app.get('/logout', (req, res) => {
         req.logout()
@@ -42,7 +45,7 @@ module.exports = (app) => {
         if(!apifromDB){
            return req.flash('error', 'Couldnt find API to update!') 
         }
-        res.render('updateapi.ejs', {apiInfo: apifromDB })
+        res.render('updateapi.ejs', {apiInfo: apifromDB, message: req.flash('error') })
     }))
 
     app.post('/login', passport.authenticate('local', {
@@ -91,8 +94,6 @@ module.exports = (app) => {
                 newApi.reqparams = reqparams
                 newApi.validators = validators
                 await newApi.save()
-                console.log('***************  ')
-                console.log(newApi)
                 res.redirect('/home')
             } catch (e){
                 console.log(e)
@@ -114,6 +115,7 @@ module.exports = (app) => {
 
                 let apifromDB = await Api.promise.findOne({apiname: req.params.apiname})
                 if(!apifromDB){
+                    console.log('Couldnt find API to update!')
                    return req.flash('error', 'Couldnt find API to update!') 
                 }
                 apifromDB.endpoint = endpoint
@@ -124,8 +126,21 @@ module.exports = (app) => {
                 apifromDB.reqparams = reqparams
                 apifromDB.validators = validators
                 await apifromDB.save()
-                console.log('***************  ')
-                console.log(apifromDB)
+                res.redirect('/home')
+            } catch (e){
+                console.log(e)
+            }
+    }))
+
+    // Delete API
+    app.post('/deleteapi/:apiname', isLoggedIn, then(async (req, res) => {
+        try{
+                let apifromDB = await Api.promise.findOne({apiname: req.params.apiname})
+                if(!apifromDB){
+                    console.log('Couldnt find API to Delete!')
+                   return req.flash('error', 'Couldnt find API to delete!') 
+                }
+                await apifromDB.remove()
                 res.redirect('/home')
             } catch (e){
                 console.log(e)

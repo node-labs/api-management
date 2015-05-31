@@ -15,6 +15,35 @@
         <h1><span class="glyphicon glyphicon-cog"></span> API Administration</h1>
 
     </div>
+    <table class="table table-striped">
+	        <th class="active">
+	        	<b>API Name</b>
+	        </th>
+	        <th class="active">
+	        	<b>URL</b>
+	        </th>
+	        <th class="active">
+	        	<b>Action</b>
+	        </th>
+    	<% for(var i=0; i < apis.length; i++) { %>
+	        <tr class="active">
+		        <td class="active">
+		        	<b><%= apis[i].apiname %></b>
+		        </td>
+		        <td class="active">
+		        	<%= apis[i].url %>
+		        </td>
+		        <td class="active">
+		        	<form action="/updateapi/<%= apis[i].apiname %>" method="get">
+		        		<button class="btn btn-primary btn-sm">Edit</button>
+		        	</form>
+		        	<form action="/deleteapi/<%= apis[i].apiname %>" method="post">
+		        		<button class="btn btn-danger btn-sm">Delete</button>
+		        	</form>
+		        </td>
+	        </tr>
+    	<% } %>
+    </table>
 
 </div>
 </body>
