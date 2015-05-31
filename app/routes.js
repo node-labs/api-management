@@ -1,12 +1,4 @@
-let isLoggedIn = require('./middlewares/isLoggedIn')
-let Api = require('../models/api')
-let multiparty = require('multiparty')
 let then = require('express-then')
-let nodeify = require('bluebird-nodeify')
-let request = require('request')
-let nodeifyit = require('nodeifyit')
-let Promise = require("bluebird")
-let DataUri = require('datauri')
 let httpProxy = require('http-proxy')
 let proxy = httpProxy.createProxyServer({})
 let Cache = require("../models/cache")
@@ -28,7 +20,7 @@ require('songbird')
 
 let apis
 
-proxy.on('proxyRes', function (proxyRes, req, res) {
+proxy.on('proxyRes', function (proxyRes, req) {
     req.data = ""
     proxyRes.on('data', function (dataBuffer) {
         console.log('---------------------------------------------------------------------------------------------------')
@@ -55,34 +47,37 @@ proxy.on('end', function(req) {
 
 module.exports = (app) => {
 
-    app.get('/api/*', then(async(req, res) => {
-        apis = app.config.apis
-        await setConfig(req)
-        let cache = await Cache.promise.findOne({key: req.cacheKey})
-        if(cache) {
-            console.log('found in the cache:' + req.cacheKey)
-            req.cacheResponse = false
-            res.json(cache.value)
-        } else {
-            req.cacheResponse = true
-            proxy.web(req, res, { target: req.apiconfig.endpoint})
-        }
-    }))
-
     async function setConfig(req) {
         let urlarray = req.url.split('?')
         let url = urlarray[0]
         req.apiconfig = apis[url]
         let cacheparams = apis[url].cacheparams.split(',')
         let cacheKey = url
-        for(let counter=0; counter<cacheparams.length; counter++) {
+        for(let counter = 0; counter<cacheparams.length; counter++) {
             console.log(req.query[cacheparams[counter]])
             if(req.query[cacheparams[counter]]) {
-                cacheKey = cacheKey + '|' + cacheparams[counter] + "=" + req.query[cacheparams[counter]]     
+                cacheKey = cacheKey + '|' + cacheparams[counter] + "=" + req.query[cacheparams[counter]]
             }
         }
         req.cacheKey = cacheKey
     }
+
+    app.get('/api/*', then(async(req, res) => {
+        apis = app.config.apis
+        await setConfig(req)
+        let entry
+        let entries = await Cache.getEntry(req.cacheKey, req.apiconfig.ttl)
+        if(entries) entry = entries[0]
+        if(entry) {
+            console.log('found the entry in the cache:' + req.cacheKey + ' with time:' + entry.cachedTS)
+            req.cacheResponse = false
+            res.json(entry.value)
+        } else {
+            req.cacheResponse = true
+            proxy.web(req, res, { target: req.apiconfig.endpoint})
+        }
+    }))
+
 
     require('./adminroutes')(app)
 }
