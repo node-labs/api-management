@@ -19,18 +19,18 @@ require('songbird')
 // }
 
 let apis
-const HTTP_OK = "200"
+const HTTP_OK = 200
 
 module.exports = (app) => {
 
     let esClient = app.esClient
 
-    async function logMetrics(req, res){
+    async function logMetrics(req, responsedata, res){
         let timeTakenInMillis = new Date() - req.startTime
         let data = {}
-        data.api = req.apiconfig.endpoint
-        data.statusCode = res.statusCode
-        data.responseCode = HTTP_OK
+        data.api = req.apiconfig.url
+        data.statusCode = responsedata.statusCode
+        data.responseCode = res.statusCode
         data.responseTime = timeTakenInMillis
         console.log('Time taken in millis: ' + timeTakenInMillis)
         await esClient.postLogToES(data)
@@ -47,20 +47,32 @@ module.exports = (app) => {
         })
     })
 
-    proxy.on('end', function(req) {
+    proxy.on('end', function(req, res) {
         if(req.apiconfig.enabledebug) {
             console.log('Response:' + req.data)
         }
-        let response
-        if(req.cacheResponse) {
+        let responsedata = JSON.parse(req.data)
+        if(req.cacheResponse && res.statusCode === HTTP_OK) {
             let cache = new Cache()
             cache.key = req.cacheKey
-            response = JSON.parse(req.data)
-            cache.value = response
+            cache.value = responsedata
             cache.cachedTS = new Date()
             cache.save()
         }
-        logMetrics(req, response)
+        logMetrics(req, responsedata, res)
+    })
+
+    proxy.on('error', function(err, req, res) {
+        console.log('Error response from the end point: ' + req.apiconfig.url)
+        console.log('Req data' + JSON.stringify(req.data))
+        console.log('Error: ' + err)
+        if(req.apiconfig.enabledebug) {
+            console.log('Response:' + req.data)
+        }
+        let responsedata
+            responsedata = JSON.parse(req.data)
+
+        logMetrics(req, responsedata, res)
         console.log('Response end..')
     })
 
@@ -94,6 +106,8 @@ module.exports = (app) => {
             if(req.apiconfig.enabledebug) {
                 console.log('Response:' + JSON.stringify(entry.value))
             }
+            // Log the API response in ES
+            logMetrics(req, entry.value)
             res.json(entry.value)
         } else {
             req.cacheResponse = true

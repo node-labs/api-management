@@ -22,12 +22,12 @@ module.exports = class ESClient {
 			.catch(e => console.log(e.stack ? e.stack : e))
 			this.esClientStub = esClientStub
 		}
-		let data = {
-			'api': '/api/categories/viewitemlist',
-			'responsecode': '200',
-			'responsetime': '1000'
-		}
-		this.postLogToES(data)
+		// let data = {
+		// 	'api': '/api/merchandisedcontent/view',
+		// 	'responsecode': '500',
+		// 	'responsetime': '1200'
+		// }
+		// this.postLogToES(data)
 		// Return this to allow chaining
 		return this
 	}
