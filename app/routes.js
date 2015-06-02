@@ -88,6 +88,7 @@ module.exports = (app) => {
             }
         }
         req.cacheKey = cacheKey
+        req.mandatoryparams = apis[url].reqparams
         if(req.apiconfig.enabledebug) {
             console.log('Request Url:' + req.url + '. Cache Key:' + cacheKey)
         }
@@ -97,6 +98,15 @@ module.exports = (app) => {
         apis = app.config.apis
         req.startTime = new Date()
         await setConfig(req)
+        let thisapivalidators = []
+        thisapivalidators = req.apiconfig.validators.split(',')
+        if(req.mandatoryparams)
+            thisapivalidators.push('reqparamsvalidator')
+        thisapivalidators = thisapivalidators.filter(Boolean)
+        for(let counter = 0; counter<thisapivalidators.length; counter++) {
+            if(app.validatorholder[thisapivalidators[counter]] && !await app.validatorholder[thisapivalidators[counter]].validate(req))
+                console.log('VALIDATION FAILED')
+        }
         let entry
         let entries = await Cache.getEntry(req.cacheKey, req.apiconfig.ttl)
         if(entries) entry = entries[0]
