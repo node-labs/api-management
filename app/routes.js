@@ -2,6 +2,9 @@ let then = require('express-then')
 let httpProxy = require('http-proxy')
 let proxy = httpProxy.createProxyServer({})
 let Cache = require("../models/cache")
+let rest = require('rest')
+let mime = require('rest/interceptor/mime')
+let urlutil = require('url')
 
 require('songbird')
 // let apis = {
@@ -53,11 +56,7 @@ module.exports = (app) => {
         }
         let responsedata = JSON.parse(req.data)
         if(req.cacheResponse && res.statusCode === HTTP_OK) {
-            let cache = new Cache()
-            cache.key = req.cacheKey
-            cache.value = responsedata
-            cache.cachedTS = new Date()
-            cache.save()
+            cacheResponse(req.cacheKey, responsedata)
         }
         logMetrics(req, responsedata, res)
     })
@@ -69,17 +68,28 @@ module.exports = (app) => {
         if(req.apiconfig.enabledebug) {
             console.log('Response:' + req.data)
         }
-        let responsedata
-            responsedata = JSON.parse(req.data)
+        let responsedata = JSON.parse(req.data)
 
         logMetrics(req, responsedata, res)
         console.log('Response end..')
     })
 
+    function cacheResponse(cacheKey, data) {
+        let cache = new Cache()
+        cache.key = cacheKey
+        let response = data
+        cache.value = response
+        cache.cachedTS = new Date()
+        cache.save()
+        return response
+    }
+
     async function setConfig(req) {
         let urlarray = req.url.split('?')
         let url = urlarray[0]
         req.apiconfig = apis[url]
+        req.aggregateapi = apis[url].endpointurls.split('|').length > 1 ? true : false
+        console.log('aggregateapi' + req.aggregateapi)
         let cacheparams = apis[url].cacheparams.split(',')
         let cacheKey = url
         for(let counter = 0; counter<cacheparams.length; counter++) {
@@ -119,12 +129,36 @@ module.exports = (app) => {
             // Log the API response in ES
             logMetrics(req, entry.value)
             res.json(entry.value)
+        } else if (req.aggregateapi) {
+            let endpoint = req.apiconfig.endpoint
+            let endpointurls = req.apiconfig.endpointurls
+            for (let param in req.query)
+            {
+                endpointurls = endpointurls.replace(new RegExp('{' + param + '}', 'g'), req.query[param])
+            }
+            let endpointUrlsList = endpointurls.split('|')
+            let client = rest.wrap(mime)
+            let promiseArray = []
+            let resposneArray = []
+            for(let counter = 0; counter < endpointUrlsList.length; counter++) {
+                let promise = client({ path: endpoint + endpointUrlsList[counter]})
+                promiseArray.push(promise)
+            }
+
+            resposneArray = await Promise.all(promiseArray)
+            let response = {}
+
+            for(let counter = 0; counter < resposneArray.length; counter++) {
+                if(resposneArray[counter].status.code === 200) {
+                    response[urlutil.parse(resposneArray[counter].request.path).pathname] = JSON.parse(resposneArray[counter].entity)
+                }
+            }
+            cacheResponse(req.cacheKey, response)
+            res.json(response)
         } else {
             req.cacheResponse = true
             proxy.web(req, res, { target: req.apiconfig.endpoint})
         }
     }))
-
-
     require('./adminroutes')(app)
 }

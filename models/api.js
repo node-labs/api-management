@@ -17,6 +17,10 @@ let apiSchema = mongoose.Schema({
 		type: String,
 		required: true
 	},
+	endpointurls: {
+		type: String,
+		required: false
+	},
 	enablecaching: {
 		type: Boolean,
 		required: true

@@ -67,6 +67,7 @@ module.exports = (app) => {
                 let apiname = req.body.apiname
                 let url = req.body.url
                 let endpoint = req.body.endpoint
+                let endpointurls = req.body.endpointurls
                 let enablecaching = req.body.enablecaching
                 let cacheparams = req.body.cacheparams
                 let ttl = req.body.ttl
@@ -98,6 +99,7 @@ module.exports = (app) => {
                 newApi.apiname = apiname
                 newApi.url = url
                 newApi.endpoint = endpoint
+                newApi.endpointurls = endpointurls
                 newApi.enablecaching = enablecaching
                 newApi.cacheparams = cacheparams
                 newApi.ttl = ttl
@@ -117,6 +119,7 @@ module.exports = (app) => {
                 let apiname = req.params.apiname
                 let url = req.body.url
                 let endpoint = req.body.endpoint
+                let endpointurls = req.body.endpointurls
                 let enablecaching = req.body.enablecaching
                 let cacheparams = req.body.cacheparams
                 let ttl = req.body.ttl
@@ -136,6 +139,7 @@ module.exports = (app) => {
                     res.redirect('/updateapi')
                 }
                 apifromDB.endpoint = endpoint
+                apifromDB.endpointurls = endpointurls
                 apifromDB.enablecaching = enablecaching
                 apifromDB.cacheparams = cacheparams
                 apifromDB.ttl = ttl
