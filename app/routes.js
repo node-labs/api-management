@@ -118,7 +118,7 @@ module.exports = (app) => {
         for(let counter = 0; counter<thisapivalidators.length; counter++) {
             if(app.validatorholder[thisapivalidators[counter]] && !await app.validatorholder[thisapivalidators[counter]].validate(req)){
                 let errorjson = error_response
-                errorjson.error_message = req.validatorerror
+                errorjson.statusCode = req.validatorerror
                 res.set('Content-Type', 'application/json');
                 res.json(errorjson)
                 return
