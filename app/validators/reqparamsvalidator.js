@@ -17,6 +17,7 @@ module.exports = class ReqParamsValidator {
 		for(let counter = 0; counter<reqparamsarray.length; counter++){
 			if(!query[reqparamsarray[counter]]){
 				console.log('Param '+reqparamsarray[counter]+' not found in request. Invalid request.')
+				req.validatorerror = 'Required parameters missing'
 				return false
 			}
 		}

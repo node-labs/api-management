@@ -23,6 +23,8 @@ require('songbird')
 
 let apis
 const HTTP_OK = 200
+let error_response = {}
+error_response.error_code = '400'
 
 module.exports = (app) => {
 
@@ -114,8 +116,13 @@ module.exports = (app) => {
             thisapivalidators.push('reqparamsvalidator')
         thisapivalidators = thisapivalidators.filter(Boolean)
         for(let counter = 0; counter<thisapivalidators.length; counter++) {
-            if(app.validatorholder[thisapivalidators[counter]] && !await app.validatorholder[thisapivalidators[counter]].validate(req))
-                console.log('VALIDATION FAILED')
+            if(app.validatorholder[thisapivalidators[counter]] && !await app.validatorholder[thisapivalidators[counter]].validate(req)){
+                let errorjson = error_response
+                errorjson.error_message = req.validatorerror
+                res.set('Content-Type', 'application/json');
+                res.json(errorjson)
+                return
+            }
         }
         let entry
         let entries = await Cache.getEntry(req.cacheKey, req.apiconfig.ttl)
