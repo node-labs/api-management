@@ -107,6 +107,8 @@ module.exports = (app) => {
                 newApi.reqparams = reqparams
                 newApi.validators = validators
                 await newApi.save()
+                let apis = await Api.promise.find()
+                app.validatorholder = await app.validatorinit.initializevalidators(apis)
                 res.redirect('/home')
             } catch (e){
                 console.log(e)
@@ -147,6 +149,9 @@ module.exports = (app) => {
                 apifromDB.reqparams = reqparams
                 apifromDB.validators = validators
                 await apifromDB.save()
+                let apis = await Api.promise.find()
+                app.validatorholder = await app.validatorinit.initializevalidators(apis)
+                console.log(app.validatorholder)
                 res.redirect('/home')
             } catch (e){
                 console.log(e)
