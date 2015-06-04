@@ -10,9 +10,18 @@
 
 ### Features
 
-#### Required
+Basic validation of the API requests
 
-### Optional
+Proxy requests to other end points
+
+Cache the API 
+
+Composing the response from multiple APIs
+
+Monitoring the performance, response etc in a Metric server based on Elastic search/Kibana
+
+Configure additional APIs and validators dynamically
+
 
 ### Highlevel Design
 
