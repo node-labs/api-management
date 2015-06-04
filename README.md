@@ -27,7 +27,7 @@ Configure additional APIs and validators dynamically
 
 ![alt tag](https://github.com/node-labs/api-management/blob/master/images/high-level-design.png)
 
-### Wirefrmaes
+### Wireframes
 ![alt tag](https://github.com/node-labs/api-management/blob/master/images/wireframe-home-page.png)
 ****
 ![alt tag](https://github.com/node-labs/api-management/blob/master/images/wireframe-create-edit-config.png)
