@@ -121,6 +121,7 @@ module.exports = (app) => {
                 errorjson.statusCode = req.validatorerror
                 res.set('Content-Type', 'application/json');
                 res.json(errorjson)
+                logMetrics(req,errorjson,res)
                 return
             }
         }
