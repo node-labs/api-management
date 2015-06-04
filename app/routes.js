@@ -118,8 +118,9 @@ module.exports = (app) => {
         for(let counter = 0; counter<thisapivalidators.length; counter++) {
             if(app.validatorholder[thisapivalidators[counter]] && !await app.validatorholder[thisapivalidators[counter]].validate(req)){
                 let errorjson = error_response
-                errorjson.statusCode = req.validatorerror
-                res.set('Content-Type', 'application/json');
+                errorjson.error_message = req.validatorerror
+                res.set('Content-Type', 'application/json')
+                res.statusCode = 500
                 res.json(errorjson)
                 logMetrics(req,errorjson,res)
                 return
